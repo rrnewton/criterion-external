@@ -3,15 +3,19 @@
 module Main where
 
 import Criterion.Main
-import Criterion.Internal
+import Criterion.Types (Benchmarkable(..))
 import System.Environment
+import System.Process
 
 gogo cmd args =
-  Benchmarkable \ reps ->
-    system $ cmd ++" "++ show reps ++" "++args
+  Benchmarkable $ \ reps ->
+    do _ <- system $ cmd ++" "++ show reps ++" "++unwords args
+       return ()
 
 main =
  do (cmd : args) <- getArgs
-    defaultMain [ Benchmark cmd (gogo cmd args) ]
+    defaultMain [
+      bench cmd (gogo cmd args)
+      ]
 
 

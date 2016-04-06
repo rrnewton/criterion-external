@@ -16,8 +16,23 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 executable criterion-external
-  hs-source-dirs:      ./src
   main-is:             Main.hs
-  build-depends:       base >=4.8, criterion, process
+  build-depends:       base >=4.8, process, split,
+                       criterion
   hs-source-dirs:      src
   default-language:    Haskell2010
+  ghc-options: -O2 -rtsopts 
+
+executable simple-haskell-io-loop
+  main-is:             IOLoop.hs
+  build-depends:       base >=4.8
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options: -O2
+
+executable simple-haskell-pure-loop
+  main-is:             PureLoop.hs
+  build-depends:       base >=4.8
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options: -O2

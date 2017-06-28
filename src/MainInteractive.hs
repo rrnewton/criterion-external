@@ -113,12 +113,18 @@ main =
                 (\ev -> bench cmd (gogo ev))
               ]
 --            putStrLn "Done benchmarking." -- defaultMain doesn't return!
+
+    -- This is hacky and lame.
+    -- The LAST batch of arguments are for criterion:
     case splitOn ["--"] allargs of
          ((cmd:ls):_) | any (== "-h") ls -> printHelp prog (gomain cmd [])
          (ls:_)       | any (== "-h") ls -> printHelp prog (gomain "" [])
 
          [] -> error $ prog++": expects the first argument to be a script/binary name."
-         [(cmd : args)]     -> withArgs []   $ gomain cmd args
-         ((cmd:args) : rest) -> withArgs (concat (L.intersperse ["--"] rest)) $
-                                  gomain cmd args
+         [(cmd : args)]     -> withArgs [] $ gomain cmd args
+         ((cmd:args) : rest) -> do
+             let (theirs,ours) = (init rest, last rest)
+                 rest' = concat (L.intersperse ["--"] theirs)
+                 args' = args ++["--"]++ rest'
+             withArgs ours $ gomain cmd args'
 

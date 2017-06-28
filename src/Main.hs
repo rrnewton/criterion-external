@@ -1,4 +1,4 @@
--- | 
+-- | Benchmark for batch, one-shot processes.
 
 module Main where
 
@@ -18,9 +18,13 @@ gogo cmd args =
 printHelp :: String -> IO () -> IO ()
 printHelp progName defMain = do 
   putStrLn $ progName ++" usage:"
+  putStrLn $ " "
   putStrLn $ "  "++progName ++" <cmdname> <cmdArg>^N -- <criterionArgs>"
-  putStrLn $ " Where <cmdname> expects N+1 args, with the first argument being "
-  putStrLn $ " an iteration count."
+  putStrLn $ " "
+  putStrLn $ " Benchmark an external program that takes a repetition count." 
+  putStrLn $ " Above, <cmdname> expects N+1 args, with the first argument being "
+  putStrLn $ " an iteration count.  Each measurement is the complete time of the"
+  putStrLn $ " spawned sub-process."
   putStrLn $ " "
   putStrLn $ " Standard Criterion usage below: "
   putStrLn $ "================================="

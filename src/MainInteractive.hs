@@ -12,6 +12,7 @@ import Criterion.Main as C
 import Criterion.Types (Benchmarkable(..))
 import System.Environment
 import System.Process
+import Data.List as L
 import Data.List.Split (splitOn)
 import System.IO
 import GHC.Generics
@@ -54,59 +55,70 @@ rdUntil h str = do
   ln <- hGetLine h
   if ln == str
     then return ()
-    else do putStrLn $" [child] "++ln
+    else do putStrLn $"> "++ln
             rdUntil h str
              
 gogo :: Env -> Benchmarkable
-gogo Env{toChild, fromChild} =
+gogo Env{toChild, fromChild, phand} =
   Benchmarkable $ \ reps -> do
---    putStrLn "Starting iteration!"
-    hPutStrLn toChild $ "START_BENCH "++show reps
-    hFlush toChild
---    putStrLn "Waiting on child"
-    rdUntil fromChild "END_BENCH" 
---    putStrLn "Iteration finished"
-    return ()
+    -- putChar '.'; hFlush stdout -- TODO: verbose mode.
+    stat <- getProcessExitCode phand
+    case stat of
+      Just code -> do -- TODO: echo buffered stdout?
+                      error $ "child process exited with code "++show code
+      Nothing -> do 
+        hPutStrLn toChild $ "START_BENCH "++show reps
+        hFlush toChild
+        -- putChar '-'; hFlush stdout
+        rdUntil fromChild "END_BENCH"         
+        -- putChar '|'; hFlush stdout
+        return ()
 
-data Env = Env { pid :: ProcessHandle
+data Env = Env { phand :: ProcessHandle
                , toChild   :: Handle
                , fromChild :: Handle
                }
 --  deriving Generic
 
 instance NFData Env where
-    rnf Env{pid,toChild,fromChild} =
-        pid `seq` toChild `seq` fromChild `seq` ()
+    rnf Env{phand,toChild,fromChild} =
+        phand `seq` toChild `seq` fromChild `seq` ()
+
 
 initEnv :: String -> [String] -> IO Env
 initEnv cmd args = do     
   (Just sin, Just sout, _, ph) <- createProcess ((proc cmd args)
                                   { std_in = CreatePipe, std_out = CreatePipe })
+  putStrLn $ "criterion-interactive: created subprocess ("++ unwords (cmd:args)++
+             "), now waiting for READY signal."
   rdUntil sout "READY"
-  return Env{ pid= ph, toChild= sin, fromChild= sout }
+  return Env{ phand= ph, toChild= sin, fromChild= sout }
 
 cleanEnv :: Env -> IO ()
-cleanEnv Env{pid} = do
-  terminateProcess pid
-  _ <- waitForProcess pid
+cleanEnv Env{phand} = do
+  putStrLn "Waiting for child process to terminate."
+  hFlush stdout
+  terminateProcess phand
+  _ <- waitForProcess phand
   return ()
 
 main :: IO ()
 main =
  do allargs <- getArgs
     prog    <- getProgName
-    let gomain cmd args = defaultMain [
-                            C.env -- TODO: envWithCleanup
-                             (initEnv cmd args)
-                             (\ev -> bench cmd (gogo ev))
-                          ]
-    case allargs of
-      (cmd:ls) | any (== "-h") ls -> printHelp prog (gomain cmd [])
-      ls       | any (== "-h") ls -> printHelp prog (gomain "" [])
-      _ -> 
-       case splitOn ["--"] allargs of 
+    let gomain cmd args = do 
+            defaultMain
+              [ C.env -- TODO: envWithCleanup
+                (initEnv cmd args)
+                (\ev -> bench cmd (gogo ev))
+              ]
+--            putStrLn "Done benchmarking." -- defaultMain doesn't return!
+    case splitOn ["--"] allargs of
+         ((cmd:ls):_) | any (== "-h") ls -> printHelp prog (gomain cmd [])
+         (ls:_)       | any (== "-h") ls -> printHelp prog (gomain "" [])
+
          [] -> error $ prog++": expects the first argument to be a script/binary name."
          [(cmd : args)]     -> withArgs []   $ gomain cmd args
-         [(cmd:args), rest] -> withArgs rest $ gomain cmd args
-         _ -> error $ prog++ ": error, got more than one '--' in arguments:\n  "++unwords allargs
+         ((cmd:args) : rest) -> withArgs (concat (L.intersperse ["--"] rest)) $
+                                  gomain cmd args
 

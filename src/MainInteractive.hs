@@ -125,6 +125,7 @@ main =
          ((cmd:args) : rest) -> do
              let (theirs,ours) = (init rest, last rest)
                  rest' = concat (L.intersperse ["--"] theirs)
-                 args' = args ++["--"]++ rest'
+                 args' = case rest' of
+                           [] -> args
+                           _  -> args ++["--"]++ rest'
              withArgs ours $ gomain cmd args'
-

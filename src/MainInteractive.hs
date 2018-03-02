@@ -9,7 +9,7 @@
 module Main where
 
 import Criterion.Main as C
-import Criterion.Types (Benchmarkable(..))
+import Criterion.Types (Benchmarkable(..), toBenchmarkable)
 import System.Environment
 import System.Process
 import Data.List as L
@@ -20,7 +20,7 @@ import Control.DeepSeq
 
 
 printHelp :: String -> IO () -> IO ()
-printHelp progName defMain = do 
+printHelp progName defMain = do
   putStrLn $ progName ++" usage:"
   putStrLn $ "  "++progName ++" <cmdname> <cmdArg> ... -- <criterionArg> ..."
   putStrLn $ " "
@@ -40,7 +40,7 @@ printHelp progName defMain = do
   putStrLn $ " of repititions, responding with the END_BENCH tag on the child processes' stdout."
   putStrLn $ " "
   putStrLn $ " The benchmark harness times the interval between sending the start"
-  putStrLn $ " message and receiving the end message.  The benchmark harness issues" 
+  putStrLn $ " message and receiving the end message.  The benchmark harness issues"
   putStrLn $ " many such 'rounds' of timing, before finally closing the subprocess"
   putStrLn $ " with the EXIT message."
   putStrLn $ " "
@@ -57,20 +57,20 @@ rdUntil h str = do
     then return ()
     else do putStrLn $"> "++ln
             rdUntil h str
-             
+
 gogo :: Env -> Benchmarkable
 gogo Env{toChild, fromChild, phand} =
-  Benchmarkable $ \ reps -> do
+  toBenchmarkable $ \ reps -> do
     -- putChar '.'; hFlush stdout -- TODO: verbose mode.
     stat <- getProcessExitCode phand
     case stat of
       Just code -> do -- TODO: echo buffered stdout?
                       error $ "child process exited with code "++show code
-      Nothing -> do 
+      Nothing -> do
         hPutStrLn toChild $ "START_BENCH "++show reps
         hFlush toChild
         -- putChar '-'; hFlush stdout
-        rdUntil fromChild "END_BENCH"         
+        rdUntil fromChild "END_BENCH"
         -- putChar '|'; hFlush stdout
         return ()
 
@@ -86,7 +86,7 @@ instance NFData Env where
 
 
 initEnv :: String -> [String] -> IO Env
-initEnv cmd args = do     
+initEnv cmd args = do
   (Just sin, Just sout, _, ph) <- createProcess ((proc cmd args)
                                   { std_in = CreatePipe, std_out = CreatePipe })
   putStrLn $ "criterion-interactive: created subprocess ("++ unwords (cmd:args)++
@@ -106,7 +106,7 @@ main :: IO ()
 main =
  do allargs <- getArgs
     prog    <- getProgName
-    let gomain cmd args = do 
+    let gomain cmd args = do
             defaultMain
               [ C.env -- TODO: envWithCleanup
                 (initEnv cmd args)

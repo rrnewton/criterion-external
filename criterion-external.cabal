@@ -1,8 +1,9 @@
 name:                criterion-external
 version:             0.2
 synopsis:            Simple demonstration of how to use Criterion to benchmark
+                     separate executables
+description:         Simple demonstration of how to use Criterion to benchmark
                      separate executables.
--- description:
 license:             BSD3
 license-file:        LICENSE
 author:              Ryan Newton
@@ -18,20 +19,27 @@ tested-with:         GHC == 7.10.3
                    , GHC == 8.4.3
                    , GHC == 8.6.1
 
+source-repository head
+  type:     git
+  location: https://github.com/rrnewton/criterion-external
+
 executable criterion-external
   main-is:             Main.hs
-  build-depends:       base >=4.8,
-                       process, split,
-                       criterion >= 1.2.1.0
+  build-depends:       base >= 4.8 && < 5,
+                       criterion >= 1.2.1.0,
+                       process,
+                       split
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -O2 -rtsopts
 
 executable criterion-interactive
   main-is:             MainInteractive.hs
-  build-depends:       base >=4.8, process, split,
+  build-depends:       base >= 4.8 && < 5,
                        criterion >= 1.2.1.0,
-                       deepseq
+                       deepseq,
+                       process,
+                       split
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -O2 -rtsopts
@@ -39,14 +47,14 @@ executable criterion-interactive
 
 executable simple-haskell-io-loop
   main-is:             IOLoop.hs
-  build-depends:       base >=4.8
+  build-depends:       base >= 4.8 && < 5
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -O2
 
 executable simple-haskell-pure-loop
   main-is:             PureLoop.hs
-  build-depends:       base >=4.8
+  build-depends:       base >= 4.8 && < 5
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -O2

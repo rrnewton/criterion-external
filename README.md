@@ -1,4 +1,4 @@
-# criterion-external
+# criterion-external [![Build](https://img.shields.io/travis/rrnewton/criterion-external.svg)](https://travis-ci.org/rrnewton/criterion-external)
 
 A small wrapper around [criterion](https://github.com/bos/criterion) to benchmark executables.
 

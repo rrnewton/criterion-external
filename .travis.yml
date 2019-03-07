@@ -126,5 +126,5 @@ script:
   # cabal check
   - (cd criterion-external-* && cabal check)
 
-# REGENDATA ["-o",".travis.yml","--ghc-head","--no-no-tests-no-bench","--no-unconstrained","cabal.project"]
+# REGENDATA ["--output=.travis.yml","--config=cabal.haskell-ci","cabal.project"]
 # EOF

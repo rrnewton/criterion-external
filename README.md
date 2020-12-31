@@ -1,4 +1,4 @@
-# criterion-external [![Build](https://img.shields.io/travis/rrnewton/criterion-external.svg)](https://travis-ci.org/rrnewton/criterion-external)
+# criterion-external [![Build Status](https://github.com/rrnewton/criterion-external/workflows/Haskell-CI/badge.svg)](https://github.com/rrnewton/criterion-external/actions?query=workflow%3AHaskell-CI)
 
 A small wrapper around [criterion](https://github.com/bos/criterion) to benchmark executables.
 

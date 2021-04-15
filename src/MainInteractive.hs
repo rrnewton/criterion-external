@@ -12,7 +12,7 @@ import Criterion.Main as C
 import Criterion.Types (Benchmarkable(..), toBenchmarkable)
 import System.Environment
 import System.Process
-import Data.List as L
+import qualified Data.List as L
 import Data.List.Split (splitOn)
 import System.IO
 import GHC.Generics

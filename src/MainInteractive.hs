@@ -55,7 +55,7 @@ rdUntil h str = do
   ln <- hGetLine h
   if ln == str
     then return ()
-    else do putStrLn $"> "++ln
+    else do putStrLn $ "> "++ln
             rdUntil h str
 
 gogo :: Env -> Benchmarkable
